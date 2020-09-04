@@ -3,7 +3,6 @@ title = "Contrail Collateral"
 baseURL = "https://minkimipt.gitlab.io/hugo"
 canonifyURLs = true
 theme = "cupper"
-publishDir = "docs"
 
 [params]
   description = "Reverse Engineering in Practice"
