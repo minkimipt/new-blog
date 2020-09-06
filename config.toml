@@ -1,6 +1,6 @@
 languageCode = "en-us"
 title = "Contrail Collateral"
-baseURL = "https://minkimipt.gitlab.io/hugo"
+baseURL = "https://madeoftungsten.com"
 canonifyURLs = true
 theme = "cupper"
 
