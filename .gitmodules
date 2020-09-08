@@ -1,3 +1,0 @@
-[submodule "data/comments"]
-	path = data/comments
-	url = https://gitlab.com/minkimipt/blog-comments.git
