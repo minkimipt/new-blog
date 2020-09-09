@@ -1,9 +1,9 @@
 +++
-title = "Configuration with Puppet in OpenStack Containers"
-date = "2020-09-02"
+title = "Containers and Puppet"
+date = "2020-09-09"
 author = "Danil Zhigalin"
 tags = ["kolla", "containers", "openstack"]
-weight = 2
+weight = 4
 +++
 
 ## Where do containers for OpenStack services come from
