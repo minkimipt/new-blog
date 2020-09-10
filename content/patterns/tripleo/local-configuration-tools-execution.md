@@ -6,7 +6,7 @@ tags = ["heat", "troubleshooting", "openstack"]
 weight = 3
 +++
 
-## Checking local configuration tools execution
+## Where local tools get their data
 
 So far we were talking about heat SoftwareDeployment resources without trying to find out what is happening on the host when those resources are created. While on the heat side everything may look shiny, local executions may encounter problems and we are usually presented some obscure error message that is given to us by heat. Without knowing what work certain heat resource is asking to be done on the host side it's difficult to figure out what caused an error. To find the cause we'll need to log into the server, where resource was applying the configuration and check the logs or even try to execute the script manually to inspect it more closely.
 
@@ -16,6 +16,8 @@ But first of all we need to know, how configuration tools are launched on the ho
 * HEAT endpoint
 * TMP URL, which is created to point to Swift container
 * Zaquar queue
+
+## How to see config data in Swift
 
 Most of the time we will see that polling is happening with POLL_TEMP_URL, which utilizes Swift of the undercloud. We can make sure what is used as SoftwareConfigTransport by checking overcloud-resource-registry-puppet.yaml
 
@@ -86,6 +88,8 @@ No matter how we retrieve information - with curl to the temp URL or by download
 openstack container save ov-vxmx2tutr-0-gevtog3pjbb5-ContrailDpdk-nc42pbz5sqp4
 ```
 
+## Structure of configuration data
+
 Inside it we will see data that all deployments will use locally on the nodes. Structure is:
 
 ```
@@ -146,6 +150,8 @@ UpdateDeployment
 
 And now having their names we can find their resource and location of the configuration script that those deployments implement.
 
+## What happens with configuration data on the node
+
 All such scripts are copied to the node into respective hook directories of /var/lib/heat-config directory and executed locally by heat-config utility. For ansible, for example, it's running something like this:
 
 
@@ -190,6 +196,8 @@ Notable task is "Run puppet host configuration for step {{step}}". This is start
 * ::tripleo::firewall - Higher level manifest is firewall.pp. Implementation of functions of the higher level manifest is in firewall/
 
 Understanding of puppet and ruby is needed to make full sence of those manifests, but you can get an idea of what they are doing by just reading the files.
+
+## Starting containers with services
 
 Another important task is "Start containers for step {{step}}". In this step paunch tool is used to start containers. This tool is somewhat analagous to docker-compose. It reads files  /var/lib/tripleo-config/hashed-docker-container-startup-config-step_{{step}}.json, which contain list of containers and all their parameters - environment variables, volumes, entrypoints, just everything you would see in a docker-compose.yaml. You can also use paunch to get the list of running containers that it controls:
 
