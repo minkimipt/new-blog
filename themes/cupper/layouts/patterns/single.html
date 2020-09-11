@@ -25,6 +25,7 @@
       {{ partial "toc" . }}
     {{ end }}
     {{ .Content }}
+  {{ partial "analytics.html" . }}
   </main>
   {{ partial "staticman.html" . }}
 {{ end }}
