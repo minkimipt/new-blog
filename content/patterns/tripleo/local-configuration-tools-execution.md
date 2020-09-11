@@ -155,9 +155,9 @@ And now having their names we can find their resource and location of the config
 All such scripts are copied to the node into respective hook directories of /var/lib/heat-config directory and executed locally by heat-config utility. For ansible, for example, it's running something like this:
 
 
-{{% note %}}
-Note that ansible-playbook is started directly on the host, to which configuration is being applied. This is different from the normal way of working with ansible, when hosts are controlled by ansible, but don't need to have ansible installed locally. Here f37357c4-53c3-4fd4-9c1a-09b840af3266 is the ID of software deploymeht, that can be found in swift contianer.
-{{% /note %}}
+{{< note >}}
+That ansible-playbook is started directly on the host, to which configuration is being applied. This is different from the normal way of working with ansible, when hosts are controlled by ansible, but don't need to have ansible installed locally. Here f37357c4-53c3-4fd4-9c1a-09b840af3266 is the ID of software deploymeht, that can be found in swift contianer.
+{{< /note >}}
 
 ```
 ansible-playbook -i localhost, --module-path /usr/share/ansible-modules /var/lib/heat-config/heat-config-ansible/f37357c4-53c3-4fd4-9c1a-09b840af3266_playbook.yaml --extra-vars @/var/lib/heat-config/heat-config-ansible/f37357c4-53c3-4fd4-9c1a-09b840af3266_variables.json
@@ -232,9 +232,9 @@ paunch list
 
 Here we see all containers that are managed by paunch on the local node, at which step they were started, what image and entrypoint they are using.
 
-{{% note %}}
+{{< note >}}
 Due to some long-standing bug paunch is crashing wile displaying the list of containers. To work around that problem I'm using this method. Replace the line in /usr/lib/python2.7/site-packages/paunch/cmd.py as is shown below
-{{% /note %}}
+{{< /note >}}
 
 ```
 diff --git a/paunch/cmd.py b/paunch/cmd.py
