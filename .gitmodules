@@ -1,0 +1,3 @@
+[submodule "data/comments"]
+	path = data/comments
+	url = ../blog-comments.git
