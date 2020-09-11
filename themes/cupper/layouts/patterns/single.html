@@ -6,7 +6,6 @@
       </svg>
       {{ .Title }}
     </h1>
-    {{ partial "analytics.html" . }}
     {{ if isset .Params "tags" }}
       <div class="tags">
         <strong aria-hidden="true">Tags: </strong>
@@ -27,5 +26,6 @@
     {{ end }}
     {{ .Content }}
   </main>
+  {{ partial "analytics.html" . }}
   {{ partial "staticman.html" . }}
 {{ end }}
