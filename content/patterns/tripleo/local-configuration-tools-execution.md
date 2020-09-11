@@ -29,30 +29,44 @@ To find out the URL that is used to get server metadata, we need to print the se
 # we already know that OS::Nova::Server resources are created within this ResourceGroup
 openstack stack resource list overcloud | grep "ContrailDpdk "
 | ContrailDpdk                                       | 8d40e39e-7e5b-4151-a91c-0033e6e36a3e                               | OS::Heat::ResourceGroup                          | UPDATE_COMPLETE | 2020-07-20T15:34:51Z |
+```
 
-# each resource inside resource grou has its sequence number as resource_name
+Each resource inside resource grou has its sequence number as resource_name
+
+{{< cmd >}}
 openstack stack resource list 8d40e39e-7e5b-4151-a91c-0033e6e36a3e
+{{< /cmd >}}
+
+```
 +---------------+--------------------------------------+---------------------------+-----------------+----------------------+
 | resource_name | physical_resource_id                 | resource_type             | resource_status | updated_time         |
 +---------------+--------------------------------------+---------------------------+-----------------+----------------------+
 | 0             | a2ba92f7-e974-4426-9271-1680a8dce217 | OS::TripleO::ContrailDpdk | UPDATE_COMPLETE | 2020-07-20T15:34:58Z |
 +---------------+--------------------------------------+---------------------------+-----------------+----------------------+
+```
 
-# Metadata_url is one of the attributes of a server. It has different format based on the transport method chosed.
+Metadata_url is one of the attributes of a server. It has different format based on the transport method chosed.
+{{< cmd >}}
 openstack stack resource show  8d40e39e-7e5b-4151-a91c-0033e6e36a3e 0 -c attributes | grep -o "metadata_url.*\},"
+{{< /cmd >}}
+
+```
 metadata_url': u'http://172.18.2.1:8080/v1/AUTH_d5abf72d8fdd463d83376b98442077c2/ov-vxmx2tutr-0-gevtog3pjbb5-ContrailDpdk-nc42pbz5sqp4/b22306ee-73d0-4c09-a4d1-3059e89dfcfe?temp_url_sig=b6d73133471a6c848cfb654677e2595534ba01a9&temp_url_expires=2147483586'},
 ```
 
 We can retrieve the information from temp URL with a simple curl command:
 
-```
+{{< cmd >}}
 curl "http://172.18.2.1:8080/v1/AUTH_d5abf72d8fdd463d83376b98442077c2/ov-vxmx2tutr-0-gevtog3pjbb5-ContrailDpdk-nc42pbz5sqp4/b22306ee-73d0-4c09-a4d1-3059e89dfcfe?temp_url_sig=b6d73133471a6c848cfb654677e2595534ba01a9&temp_url_expires=2147483586"
-```
+{{< /cmd >}}
 
 And here is the container, that stores all metadata for software deployments ov-vxmx2tutr-0-gevtog3pjbb5-ContrailDpdk-nc42pbz5sqp4. With this method of transport in use, similar containers are created in Swift:
 
-```
-(undercloud) [stack@undercloud overcloud]$ openstack container list
+{{< cmd >}}
+openstack container list
+{{< /cmd >}}
+
+{{< code numbered="true" >}}
 +-------------------------------------------------------+
 | Name                                                  |
 +-------------------------------------------------------+
@@ -69,7 +83,7 @@ And here is the container, that stores all metadata for software deployments ov-
 | ov-esio5zp2rg-1-4swvxjpr37uy-CephStorage-4uedtasootdd |
 | ov-esio5zp2rg-2-ztka4url5lb7-CephStorage-w7fxf5kk7sa6 |
 | ov-ptlmqcr4v4-0-b53urv2cfjje-NovaCompute-af3z53nwvqsb |
-| ov-vxmx2tutr-0-gevtog3pjbb5-ContrailDpdk-nc42pbz5sqp4 | << here is the container from the previous example
+| [[[ov-vxmx2tutr-0-gevtog3pjbb5-ContrailDpdk-nc42pbz5sqp4]]] |
 | ov-xavchfb-1-updocnngix7s-ContrailSriov1-2bd5lwl2qzzu |
 | ov-y5o7lcof3h-0-h3zqwfcivan3-NovaCompute-otskkmy3zxgp |
 | overcloud                                             |
@@ -80,13 +94,15 @@ And here is the container, that stores all metadata for software deployments ov-
 | plan-exports                                          |
 | plan-exports_segments                                 |
 +-------------------------------------------------------+
-```
+{{< /code >}}
+
+1. here is the container from the previous example
 
 No matter how we retrieve information - with curl to the temp URL or by downloading container from swift:
 
-```
+{{< cmd >}}
 openstack container save ov-vxmx2tutr-0-gevtog3pjbb5-ContrailDpdk-nc42pbz5sqp4
-```
+{{< /cmd >}}
 
 ## Structure of configuration data
 
@@ -159,9 +175,9 @@ All such scripts are copied to the node into respective hook directories of /var
 That ansible-playbook is started directly on the host, to which configuration is being applied. This is different from the normal way of working with ansible, when hosts are controlled by ansible, but don't need to have ansible installed locally. Here f37357c4-53c3-4fd4-9c1a-09b840af3266 is the ID of software deploymeht, that can be found in swift contianer.
 {{< /note >}}
 
-```
+{{< cmd >}}
 ansible-playbook -i localhost, --module-path /usr/share/ansible-modules /var/lib/heat-config/heat-config-ansible/f37357c4-53c3-4fd4-9c1a-09b840af3266_playbook.yaml --extra-vars @/var/lib/heat-config/heat-config-ansible/f37357c4-53c3-4fd4-9c1a-09b840af3266_variables.json
-```
+{{< /cmd >}}
 
 With this knowledge, when we see an error like this during deployment, we already know where to look further:
 
