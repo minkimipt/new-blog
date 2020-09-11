@@ -10,7 +10,7 @@ There are many ways to install OpenStack. Linux vendors chose to use one or anot
 I'm working with TripleO for 3 years already. I have to admit, that it's very complex and not transparent product, which is not playing for you when you want to do some troubleshooting. There is also a lot of legacy, which makes trying to figure out things on your own even more complex. Well, you can draw it on your side, but some learning and digging around in the templates is required. As I've already written, I'm fond of digging and doing reverse engineering, so TripleO has a lot to offer for those, who seeks this sort of challenge. I'm going to describe my findings and methods that I was using to research it and hopefully it will save some time to those, who are under more time pressure and want just to solve things instead of researching how they work.
 
 
-* {{% pattern "Role of Heat in TripleO" %}} - Part 1
-* {{% pattern "Local Configuration Tools" %}} - Part 2
+* {{< pattern "Role of Heat in TripleO" >}} - Part 1
+* {{< pattern "Local Configuration Tools" >}} - Part 2
 
 More to come...
