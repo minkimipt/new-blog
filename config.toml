@@ -4,6 +4,11 @@ baseURL = "https://madeoftungsten.com"
 canonifyURLs = true
 theme = "cupper"
 
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+
 [sitemap]
   changefreq = "monthly"
   filename = "sitemap.xml"
