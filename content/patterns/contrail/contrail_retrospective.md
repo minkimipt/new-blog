@@ -145,6 +145,7 @@ Contrail was mainly used with OpenStack, but support of additional orchestrators
 
 In 2014 microservices where becoming a trend. An idea took off that OpenStack services can be containerised, which would greatly simplify installation and maintenance of various services comprising OpenStack. This idea got crystallised as [kolla project](https://wiki.openstack.org/wiki/Kolla) and the benefits of this approach became evident. So Contrail had to follow and the first attempt to containerise contrail services was made in 4.0, when [fat containers](https://www.juniper.net/documentation/en_US/contrail4.0/topics/concept/containers-overview.html) were introduced. Fat containers is not an official name, but rather a way to distinguish, that there is yet another container architecture of Contrail that we will talk about later. As you may guess, that architecture was not an ideal one. Multiple services were grouped into containers based on their function. Same supervisord was used inside containers in place of init subsystem to control the running services. Volumes were not used and all data was kept inside containers, which didn't make upgrade of those containers an easy task. I haven't seen many mentioning of this architecture in the web, so for the purpose of this article it's enough to know that it existed.
 
+An important thing to consider is that [ISSU](https://github.com/tungstenfabric/tf-specs/blob/master/contrail-issu.md) procedure that was was introduced starting from 3.2, that allows to upgrade Contrail to **some** (I'd love to say **any** here, but I can't guaranty this) later release.
 
 ## Contrail microservices
 
@@ -173,6 +174,16 @@ Important thing about this new packaging approach is that it opened a door to po
 2. JuJu charms for installing contrail with Charmed OpenStack and Kubernetes
 3. Helm charts for deploying Contrail
 
-With the advent of version 5.0, Contrail has also has received a new identity as a fabric manager meaning that Contrail learned how to manage fabrics physical switches in order to extend the virtual experience into the physical world. This alone deserves a separate series of posts.
+With the advent of version 5.1, Contrail has also has received a new identity as a fabric manager meaning that Contrail learned how to manage fabrics physical switches in order to extend the virtual experience into the physical world. This alone deserves a separate series of posts. And 5.1 was the last version of Contrail that followed the naming convention that we've used from the beginning of this article.
+
+## Naming and release frequency
+
+Initially Contrail has followed <Maj>.<Min>.<Maint> release naming convention. Major numbering started from 1.0 and releases happened roughly once in a year. Minor releases were seen roughly once in 4 months. There is official [juniper page](https://support.juniper.net/support/eol/software/contrail/) where this can be reconstructed. When architecture was fully migrated to microservices, it became evident that releases can start happening more frequently provided the improved upgradeability of the product. To distinguish that things are working differently, decision was taken to change naming convention of Contrail releases to single 4-digit number in form of R<last_2_year_digits><2_months_digits>. 
+
+First release following this new naming convention was R1907, which was released in July 2019. At that time engineering was dedicated to provide a new Contrail release on a monthly basis, and they followed that pattern until 1912. By the end of 2019 it became evident that it's not really feasible to keep up with such hight pace of releasing new code, so release process had to be changed again.
+
+Starting from 1912 releases are going to happen on a quarterly basis meaning that 2003 is the direct successor of 1912. Every new release is receiving new features and bug fixes. Upgrades are supported from any of such releases to any later release +4 steps ahead, e.g. from R2005 we can go to any of R2008, R2011, R2102, R2105. This behaviour should work starting from R2005. Please don't nail me down on that because thing tend to change frequently.
+
+Also a new concept of LTS releases was introduced. Every November release is LTS with 1912 being an exception. So 1912 is the current LTS release. LTS releases are going to be maintained for 3 years (R1912 is exception, it's going to be maintained only 2 years). Bug fixes for LTS releases are going to be released in form of <release_name>.L<maint_release_number>, e.g. R1912.L2 is the second maint release for R1912 LTS. Each LTS is going to receive 8 maintenance releases during the first 2 years of their lifetime (once in every 4 month), and the last year is going to receive only support from JTAC. Here R1912 is exceptional again because it's going to receive only 4 maintenance releases.
 
 I think with this post I've retrospected enough and now it's time to concentrate on the future.
