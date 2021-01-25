@@ -17,7 +17,7 @@ Links gathered here can entertain you for several days
 ## General architecture
 
 There are various documents talking about Contrail architecture, even on the official site, but you know there are always more then one way to skin a cat (don't worry, we need our cats alive).
-* [The newer version from year 2019](https://www.juniper.net/documentation/en_US/release-independent/solutions/information-products/pathway-pages/sg-010-contrail-networking-arch-guide.pdf)
+* [The newer version from year 2019](https://www.juniper.net/documentation/en_US/release-independent/solutions/information-products/pathway-pages/sg-010-contrail-networking-arch-guide.pdf) - this document already describes fabric management capabilities of Contrail.
 * [The older version from year 2015](https://www.juniper.net/us/en/local/pdf/whitepapers/2000535-en.pdf).
 * [Tungsten Fabric architecture](https://tungstenfabric.github.io/website/Tungsten-Fabric-Architecture.html)
 
