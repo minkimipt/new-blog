@@ -42,7 +42,7 @@ This diagram requires some comments.
 
 There are 3 static VPGs created on the switches with help of CFM. Static VPG is not a special kind of VPG that you can configure, I'm just referring to them as static because they always have to be there for cluster to function properly. Those VPGs are supposed to be created by cluster admin. In contrast with the static VPGs, all other VPGs are going to be dynamic - it means they come and go based on requirement and are supposed to be controlled by end users.
 
-There is one additional network that we need to create for Ironic to function properly. That is provisioning/cleaning network. Actually there can be 2 networks each having only provisioning or only cleaning role, but we can collocate them. In Canonical setup those networks are expected to be in `services` domain. Cleaning network is the first network where BMS gets connected to when it's being onboarded. Using that network servers does its initial boot and loads a special image called Ironic Python Agent (IPA) that can perform some maintenance tasks like disk celaning, hardware introspection and so one. This is done using PXE boot procedure. BMS server first obtains an IP address, default gateway and path to the boot script using DHCP. Then it reaches to the TFTP server to fetch the boot script and subsequently kernel and initramfs, that contain all the code necessary for mentioned maintenance tasks to be performed by IPA. I've selected 192.168.1.0/24 as provisioning/cleaning network subnet. Gateway of that subnet is 192.168.1.1. TFTP server is on ironic-conductor, which has the IP 192.168.2.120. It means that there should be some way for BMS that has an IP from 192.168.1.0/24 range to reach 192.168.2.120. That's exactly what I'm providing by creating the static VPG in provisioning/cleaning network. In contrast with underlay0 and underlay1 we don't need to extend provisioning network to switches (at least in my scenario). All routing will be done by the hypervisor host, which will play the role of gateway for provisioning network. This enables connectivity from provisioning/cleaning to internal network. Ironic conductor will need to know how to reach back to provisioning network to send all that data to the booting server. It means that we need a static route from ironic-conductor to provisioning network. Something like `ip route set 192.168.1.0/24 via 192.168.2.15`. Once IPA is booted, it will want to reach ironic-api to report back about its progress. When BMS server is going to boot the main image, it will reach out to S3 temp URL directly created by Glance (exposed by swift of rados gateway). That's why we need to make sure that ironic-api, rados-gw and ironic-conductor can reach back to provisioning network too. In my lab I did that with static routes that I had to create after I discovered that connectivity requirement. But it's a good idea to take care about them before deployment was actually done. 
+There is one additional network that we need to create for Ironic to function properly. That is provisioning/cleaning network. Actually there can be 2 networks each having only provisioning or only cleaning role, but we can collocate them. In Canonical setup those networks are expected to be in `service_domain`, `services` project. Cleaning network is the first network where BMS gets connected to when it's being onboarded. Using that network servers does its initial boot and loads a special image called Ironic Python Agent (IPA) that can perform some maintenance tasks like disk celaning, hardware introspection and so one. This is done using PXE boot procedure. BMS server first obtains an IP address, default gateway and path to the boot script using DHCP. Then it reaches to the TFTP server to fetch the boot script and subsequently kernel and initramfs, that contain all the code necessary for mentioned maintenance tasks to be performed by IPA. I've selected 192.168.1.0/24 as provisioning/cleaning network subnet. Gateway of that subnet is 192.168.1.1. TFTP server is on ironic-conductor, which has the IP 192.168.2.120. It means that there should be some way for BMS that has an IP from 192.168.1.0/24 range to reach 192.168.2.120. That's exactly what I'm providing by creating the static VPG in provisioning/cleaning network. In contrast with underlay0 and underlay1 we don't need to extend provisioning network to switches (at least in my scenario). All routing will be done by the hypervisor host, which will play the role of gateway for provisioning network. This enables connectivity from provisioning/cleaning to internal network. Ironic conductor will need to know how to reach back to provisioning network to send all that data to the booting server. It means that we need a static route from ironic-conductor to provisioning network. Something like `ip route set 192.168.1.0/24 via 192.168.2.15`. Once IPA is booted, it will want to reach ironic-api to report back about its progress. When BMS server is going to boot the main image, it will reach out to S3 temp URL directly created by Glance (exposed by swift of rados gateway). That's why we need to make sure that ironic-api, rados-gw and ironic-conductor can reach back to provisioning network too. In my lab I did that with static routes that I had to create after I discovered that connectivity requirement. But it's a good idea to take care about them before deployment was actually done.
 
 Another approach instead of creating that gateway on a hypervisor host (it was an ad-hoc hack to be honest, not a real solution), we will have to extend that provisioning network to DC Gateway router (if it exists) and route our traffic via it.
 
@@ -62,7 +62,7 @@ CSN is collocated with nova-ironic. Ironic requires nova-compute service to work
 
 ## Getting Started
 
-The first thing to start the integration should be installation of a cluster with Ironic. JuJu Charms are giving user enough flexibility to setup Ironic depending on his needs. Most of the deployment options are described in the [repo of ironic-conductor](https://opendev.org/openstack/charm-ironic-conductor). All critical configurations that define the way how ironic will operate such as `enabled-deploy-interfaces` and `enabled-network-interfaces` should be set in this charm. For the settings I used refer to the [example bundle](https://github.com/gabriel-samfira/charm-ironic-api/blob/master/src/tests/bundles/bionic-train.yaml). The bundle that I composed as a result you can see in Appendix 1 charm bundle.
+The first thing to start the integration should be installation of a cluster with Ironic. JuJu Charms are giving user enough flexibility to setup Ironic depending on his needs. Most of the deployment options are described in the [repo of ironic-conductor](https://opendev.org/openstack/charm-ironic-conductor). All critical configurations that define the way how ironic will operate such as `enabled-deploy-interfaces` and `enabled-network-interfaces` should be set in this charm. For the settings I used refer to the [example bundle](https://github.com/gabriel-samfira/charm-ironic-api/blob/master/src/tests/bundles/bionic-train.yaml). The bundle that I composed as a result you can see in [charm bundle]({{< relref "#appendix-1-bundle" >}} "Appendix 1 Bundle").
 
 Ironic integration is provided by the following charms:
 
@@ -115,7 +115,7 @@ Baremetal servers may be configured to boot from image of from volume. In order 
 
 ## Installing the cluster using juju
 
-Use the bundle from appendinx. Deployment procedure is described [here](https://docs.openstack.org/project-deploy-guide/charm-deployment-guide/latest/). Make sure you are checking documentation for your desired OpenStack release. I was using Train - latest supported OpenStack release by that time. There are some actions that need to be run after cluster is deployed:
+Use the bundle from [Appendix]({{< relref "#appendix-1-bundle" >}} "Appendix 1 Bundle") for inspiration. General deployment procedure is described [here](https://docs.openstack.org/project-deploy-guide/charm-deployment-guide/latest/). Make sure you are checking documentation for your desired OpenStack release. I was using Train - latest supported OpenStack release by that time. There are some actions that need to be run after cluster is deployed:
 
 * [for onboarding contrail cluster into contrail-command](https://jaas.ai/u/juniper-os-software/contrail-command)
 * [for preparing vault for service](https://docs.openstack.org/project-deploy-guide/charm-deployment-guide/latest/app-vault.html)
@@ -123,15 +123,43 @@ Use the bundle from appendinx. Deployment procedure is described [here](https://
 
 ## Post deployment tasks
 
-There is a nice [guide](https://github.com/gabriel-samfira/ironic-bundle/blob/master/README.md) summarizing post deployment tasks.
+There is a nice [guide](https://github.com/gabriel-samfira/ironic-bundle/blob/master/README.md) summarizing post deployment tasks. You can follow it to prepare for starting your first baremetal server.
 
-{{< note >}}
-While loading the image into glance store I didn't figure out that my glance client was too old and it was not working properly with --store option. My client that I installed from ubuntu repositories was not aware of that option when I initially tried that. Make sure that you are running some fresh version of client.
-{{< /note >}}
+Above link mentions how to: 
 
-It also explains how to boot a baremetal server - don't do it now, read on to know some Contrail specifics that you need to take care of before proceeding with server booting. Due to the fact that we are using network interface `neutron`, we need to specify provisioning and cleaning network UUIDs while we are creating baremetal node. We've ensured that provisioning/cleaning network already exists during our network preparation.  
+* build a baremetal image
+* load the image to glance
+* create a flavor for booting the server
+* create a baremetal server with all necessary properties
+* create a baremetal port
+* boot the server with a volume
 
-Due to the fact that we have only one network, we are going to use the same ID for both purposes. I've already mentioned connectivity requirement between cleaning/provisioning and internal networks.
+Here are some caveats to the mentioned steps:
+
+* Due to the limitation in metadata support when Ironic is integrated with Contrail, ConfigDrive is the only way to pass metadata to the server. By default it's not enabled and needs to be enabled explicitly. For full documentation of diskimage-builder refer to its official [document](https://diskimage-builder.readthedocs.io/en/latest/). Here's the script that allowed me to login to the server with the key that I supplied to it with metadata.
+
+```
+export DIB_CLOUD_INIT_ALLOW_SSH_PWAUTH=yes
+export DIB_DEV_USER_PWDLESS_SUDO=yes
+# use the public key that you are planning to use to login to the server
+export DIB_DEV_USER_AUTHORIZED_KEYS=/home/ubuntu/id_rsa.pub
+export DIB_DEV_USER_PASSWORD=<YOUR PASSWORD>
+export IMAGE_DIR=/home/ubuntu/images
+export DIB_DEV_USER_USERNAME=devuser
+export DIB_CLOUD_INIT_DATASOURCES="ConfigDrive"
+for release in bionic
+do
+    export DIB_RELEASE=$release
+    disk-image-create --image-size 5 \
+        ubuntu vm dhcp-all-interfaces devuser cloud-init-datasources cloud-init \
+    iscsi-boot block-device-efi \
+        -o $IMAGE_DIR/baremetal-ubuntu-$release
+done
+```
+* While loading the image into glance store I didn't figure out that my glance client was too old and it was not working properly with --store option. My client that I installed from ubuntu repositories was not aware of that option when I initially tried that. Make sure that you are running a fresh version of glance client. For me glance client version 3.2.2 worked.
+* While scheduling the baremetal server, nova-scheduler can rely on custom flavor keys. If you want to use some other value instead of `resources:CUSTOM_BAREMETAL_SMALL` given in the example, refer to the rules [here](https://docs.openstack.org/ironic/pike/install/configure-nova-flavors.html).
+* **DON'T BOOT THE SERVER NOW!** Read on to know some [Contrail specifics]({{< relref "#contrail-specifics" >}} "Contrail Specifics") that you need to take care of before proceeding with server booting. 
+* Due to the fact that we are using network interface `neutron`, we need to specify provisioning and cleaning network UUIDs while we are creating baremetal node. We've ensured that provisioning/cleaning network already exists during our network preparation. We are going to use the same ID for both purposes. I've already mentioned connectivity requirement between cleaning/provisioning and internal networks and will mention it a couple of times further 😉
 
 When Ironic is being used together with Contrail, we need to add some more data to baremetal port in order to help Contrail understand to which port on the fabric that server is connected. Here is example of baremetal port creation command.
 
@@ -148,7 +176,7 @@ openstack baremetal port create [[[00:16:3e:46:eb:76]]] \
 3. Name of the switch to which this BMS server is connected
 4. Port name on that switch to which BMS server is connected
 
-After port is created, we need to provide the node. The goal of this step is to make baremetal server available for deploying baremetal instance on it. It's done using this command:
+After port is created, we need to "provide" the node. The goal of this step is to make baremetal server available for deploying baremetal instance on it. It's done using this command:
 
 ```
 openstack baremetal --os-baremetal-api-version 1.11 node manage $NODE_UUID01
@@ -253,15 +281,35 @@ Some comments about the communication flows that are displayed in the diagram:
 11. Back over the same VXLAN tunnel in reverse direction.
 12. Back to the BMS.
 
-Now we are ready to boot the server. We can boot it either from volume as it's described in the [mentioned guide](https://github.com/gabriel-samfira/ironic-bundle/blob/master/README.md) or from image. Before creating the server I was creating the port in the target network and assigning `binding_profile` to it manually, but looks like it's optional and if you just select network it should also work. When you are going to use multiple ports on the baremetal server, as I understand, assigning binding_profile becomes compulsory, otherwise Contrail will not know on which switch and port to create additional VPGs for the ports that were not used for PXE. From the other hand this can be done already after server is booted using some script. One challenge that I had while booting the server was metadata. I haven't figured out how to provide metadata to the server using the classical way (when server is requesting 169.254.169.254). It looks like the only way to do it is to supply [config drive to baremetal instance](https://docs.openstack.org/ironic/latest/install/configdrive.html). Make sure that your baremetal image is setup to use configdrive as metadata source. Also it can be quite handy to enable password on the image to ease troubleshooting.
+Now we are ready to boot the server. We can boot it either from volume as it's described in the [mentioned guide](https://github.com/gabriel-samfira/ironic-bundle/blob/master/README.md) or from image. Before creating the server I was creating the port in the target network and assigning `binding_profile` to it manually, but looks like it's optional and if you just select network it should also work. When you are going to use multiple ports on the baremetal server, as I understand, assigning binding_profile becomes compulsory, otherwise Contrail will not know on which switch and port to create additional VPGs for the ports that were not used for PXE. 
 
-When baremetal instance is being created, initially process looks quite similarly to already described. But this time IPA will not clean the server, but rather it will download the image to it from swift temporary URL and write it to disk. When it's done writing image to disk, it will signal back to ironic-api that it is ready and it will initiate network flip. Server will be rebooted at that time and will boot into the image that was loaded to the disk. Initial port in the provisioning network will be deleted and a new one (very similar one but already in the target network) will be created. New OS will send DHCP request to obtain IP and server will be ready for use.
+One drawback of Ironic integration with Contrail is lack of possibility to supply metadata to servers over the network. In order to take advantage of metadata, server needs to be booted with [config drive](https://docs.openstack.org/ironic/latest/install/configdrive.html). Baremetal image should be configured to use config drive as metadata source.
+
+When baremetal instance is being created, initially process looks quite similarly to already described. But this time IPA will not clean the server, but rather it will download the image to it from swift temporary URL (i.e. from radosgw) and write it to disk. When it's done writing image to disk, it will signal back to ironic-api that it is ready and it will initiate network flip. Server will be rebooted at that time and will boot into the image that was loaded to the disk. Initial port in the provisioning network will be deleted and a new one (very similar one but already in the target network) will be created. New OS will send DHCP request to obtain IP and server will be ready for use.
 
 ## Contrail Specifics
 
 As you have read, things work a bit differently when Ironic is integrated with Contrail. There are a couple of documents that describe how integration between OpenStack and Ironic is implemented - [blueprint on github](https://github.com/Juniper/contrail-specs/blob/R2003/ironic_contrail.md) (does not contain some images, that's why it's better to refer to a google docs version), [blueprint on google docs](https://docs.google.com/document/d/1qAV_qLIJM9PNcSm_h_ag1J91zOXegSZYjcEA6BjdWhk/edit#heading=h.coj5qr7ujaex), [baremetal integration design](https://docs.google.com/document/d/1EcA6H6fe5j_kqxFQ6dAH416Q51k5ZwtEo2gTSSpUz4c/edit). They are very detailed one and give a good understanding of how this should work in theory. Initial development and testing of Ironic integration happened with OpenStack Kolla release Pike in mind, which does not necessarily hold true for all possible OpenStack installations. And indeed for JuJu installation of Ironic I had to sort something out before it worked.
 
+Here are a few things that I didn't understand from the mentioned documents directly and I think that it makes sense to mention them explicitly.
+
+To allow CSN node to answer DHCP requests from the server, it needs to be associated with the TOR switch, that BMS server is connecting to. This is often forgotten (also by me) setting that needs to be done directly on the leaf level. Note Virtual Router Type and name of the Existing TSN that we need to select from the dropdown list. This picture is taken from some other setup, that is not described in the original post, don't be surprised that names of objects are different.
+
+![bear_meme](/img/Adding_csn_node_to_tor.png)
+
+Another thing to note on this picture is Associate virtual networks box. Inside it we see `ironic` network. This is the name of "provisioning/cleaning" network of that other setup. In it I've chosen to extend that network to the leaf switch to do the routing on the switch directly (not to rely on external hypervisor that was doing routing for me). The tricky part here is that fabric is being managed in `admin` project of `admin_domain` and `ironic` network is in `services` project of `admin_domain` as we remember from [this section]({{< relref "#about-network" >}} "About Network").
+
 ## Appendix 1 Bundle
+
+To avoid bloating this post with yaml content I decided to hide it under this expandable element. There are comments inside that are marked with "Note:" at those places that I was struggling with or which are otherwise critical for ironic operation.
+
+Here is some context about the application that make up this setup (only those that are important for ironic to function):
+
+* nova-ironic - it is like nova-compute as you can see from the charm. But it's not actually used to host any workloads directly and it doesn't have any hypervisor. Rather it's just pretending to be a compute host. When it receives request to start a VM, it contacts ironic to delegate all the work to it.
+* contrail-agent-csn - Contrail Service Node. It's a component responsible for replying to DHCP and DNS requests from BMS. As you can see it's just a vRouter agent charm with a special setting. Same as vRouter agent charm for real vRouters, CSN application needs to be related to some other application because of its subordinate nature. 
+* ironic-api - rather self explanatory. It's the API server for Ironic. Remember that you need to ensure connectivity from that application back into the cleaning network and you need to create static route accordingly. Better to think about it before the installation. There is a more sophisticated, but also more robust approach to solving this problem that I aim to describe in a separate post. 
+* ironic-conductor - it does most of the heavy lifting of communication with BMS wile it's booting and assisting it during this process. Due to a limitation in CSN, ironic-conductor should be configured to use PXE boot instead of iPXE, which is the default. Same connectivity requirement exist for this application as for ironic-api.
+* ceph-radosgw - our way of exposing Swift API without installing the swift. Same connectivity requirement exist for this application as for ironic-api.
 
 {{< expandablecode label="Expand to see the full bundle" level="2" >}}
 series: bionic
@@ -303,6 +351,9 @@ applications:
     charm: ./ironic/builds/ironic-api
     num_units: 1
     constraints: spaces=internal
+    bindings:
+      # Note: I had a problem with this binding - it has to be in the same space as mysql VIP. If it's not in the same space, ironic-api will fail.
+      shared-db: internal
     options:
       openstack-origin: *openstack-origin
     to:
@@ -322,19 +373,21 @@ applications:
       default-deploy-interface: "direct"
       provisioning-network: "ironic-provision"
       cleaning-network: "ironic-clean"
+      # Note: this is important setting because iPXE is not supported by CSN
+      use-ipxe: false
     to:
     - lxd:0
-  neutron-ironic-agent:
-    charm: ./ironic/builds/neutron-api-plugin-ironic
-    options:
-      openstack-origin: *openstack-origin
   ceph-radosgw:
     charm: cs:~openstack-charmers-next/ceph-radosgw
     num_units: 1
     options:
       source: *openstack-origin
+      # Note: I've mentioned that already in the main text. If not set properly your temporary URLs won't work because of authentication problems.
       namespace-tenants: True
+      # Note: I had problems with these settings. By default they are set to Member and Admin respectively. And in the cluster they are set to member and admin.
+      # If not set correctly swift will fail to authenticate.
       operator-roles: member
+      admin-roles: admin
     constraints: spaces=internal
     to:
     - lxd:0
