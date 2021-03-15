@@ -49,6 +49,9 @@
               <a class="logo" href="/" aria-label="{{ .Site.Title }} home page">
                 <img src="{{ "images/logo.svg" | absURL }}" alt="">
               </a>
+              <a class="linkedin" href="https://www.linkedin.com/in/danil-zhigalin-2893b032/" aria-label="linkedin page">
+                <img src="{{ "images/linkedin-big-logo-svgrepo-com.svg" | absURL }}" alt="" width=20%>
+              </a>
               <p class="library-desc">
                 {{ .Site.Params.Description | markdownify }}
                 {{ if ne .Type "print-version" }}
@@ -79,6 +82,14 @@
                 {{ $current := . }}
                 {{ range $.Site.Home.Sections }}
                   <ul id="patterns-list">
+                      <li class="pattern">
+                         <a href="{{ "/tags" | absURL }}">
+                            <svg class="bookmark-icon" aria-hidden="true" focusable="false" viewBox="0 0 40 50">
+                               <use xlink:href="#bookmark"></use>
+                            </svg>
+                            <span class="text">Tags</span>
+                         </a>
+                      </li>
                     {{ range .Pages.ByWeight }}
                       <li class="pattern">
                         <a href="{{ .RelPermalink }}" {{ if eq $current.Permalink .Permalink  }}aria-current="page"{{ end }}>
