@@ -1,6 +1,6 @@
 languageCode = "en-us"
 title = "Contrail Collateral"
-baseURL = "https://madeoftungsten.com"
+baseURL = "http://codebuild-blog-bucket.s3-website-us-west-2.amazonaws.com/"
 canonifyURLs = true
 theme = "cupper"
 
