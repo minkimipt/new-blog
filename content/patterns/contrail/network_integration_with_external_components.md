@@ -135,3 +135,4 @@ And now let's study on the same pair of leaves how traffic should traverse from 
 there has to be an LR (Logical Router) created in contrail and extended to the pair of leaves closest to controllers running those services. BMS will get default gateway assigned by CSN with next hop being the irb of the red network. Next hop is assigned automatically based on ironic network gateway configuration, that's why will just automatically work for traffic in the direction from BMS to ironic conductor. For the return direction however we need to make sure that all components listed in the picture - ironic conductor, ironic API and swift are able to reach back to ironic network. In other words we need a static route from that network pointing via the green network irb. In this VXLAN traffic is terminated on the leaf switches and is sent further to servers without additional overlay encapsulation.
 
 this is a test
+this is a test1
